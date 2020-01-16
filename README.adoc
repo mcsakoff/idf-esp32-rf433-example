@@ -1,0 +1,36 @@
+= ESP8266 RTOS (ESP-IDF) - RF433 Receiver Example
+ifdef::env-github[:outfilesuffix: .adoc]
+
+image:https://img.shields.io/badge/License-MIT-yellow.svg[License: MIT,link=https://opensource.org/licenses/MIT]
+
+== Prerequisites
+
+- ESP8266 family of chips based device.
+- link:https://github.com/espressif/ESP8266_RTOS_SDK[ESP8266 RTOS SDK] installed.
+- Toolchain installed into `~/esp/tools/xtensa-lx106-elf`.
+
+[NOTE]
+Built and tested on *ESP8266 RTOS (ESP-IDF) v3.3 (fc30fca3)*.
+
+== Build and run
+
+.Configure the project
+    $ make menuconfig
+
+.Build a firmware
+    $ make all
+
+.Flash to the device and run monitor
+    $ make flash monitor
+
+== Development
+
+.Open the project in CLion
+    $ make open
+
+== Copyright and Licensing
+
+Copyright (C) 2019-2020 Alexey McSakoff +
+Free use of this software is granted under the terms of the MIT License.
+
+See the <<LICENSE#,LICENSE>> file for details.

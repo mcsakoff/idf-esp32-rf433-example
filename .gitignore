@@ -1,0 +1,6 @@
+.DS_Store
+/.idea/
+/build/
+/cmake-build-*/
+/sdkconfig
+/sdkconfig.old
