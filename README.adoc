@@ -3,14 +3,19 @@ ifdef::env-github[:outfilesuffix: .adoc]
 
 image:https://img.shields.io/badge/License-MIT-yellow.svg[License: MIT,link=https://opensource.org/licenses/MIT]
 
+Protocols supported:
+
+- EV1527 (RT1527, FP1527, HS1527)
+
 == Prerequisites
 
+- 315/433-MHz RF transmitter module.
 - ESP8266 family of chips based device.
 - link:https://github.com/espressif/ESP8266_RTOS_SDK[ESP8266 RTOS SDK] installed.
 - Toolchain installed into `~/esp/tools/xtensa-lx106-elf`.
 
 [NOTE]
-Built and tested on *ESP8266 RTOS (ESP-IDF) v3.3 (fc30fca3)*.
+Built and tested on *ESP-IDF v3.3-rc1 (fc30fca3)*.
 
 == Build and run
 
