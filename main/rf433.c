@@ -9,7 +9,7 @@
 xQueueHandle rfcode_event_queue = NULL;
 
 /*****************************************************************************
- * Protocol
+ * Protocol Definitions
  *****************************************************************************/
 
 typedef struct {
@@ -17,13 +17,18 @@ typedef struct {
     int max;
 } Range;
 
+typedef struct {
+    int data;
+    int bits;
+} Code;
+
 //typedef struct {
 //    int high;
 //    int low;
 //} Pulses;
 
 typedef struct {
-    const int id;                // protocol ID
+    const uint16_t id;                // protocol ID
 
     //  +---+                           +
     //  | 1 |            31             |
@@ -44,15 +49,65 @@ typedef struct {
     Range sync_us;
     Range bit_us;
 
-    int bit_num;                // bit's number we a currently reading; -1 means we are looking for SYNC
-    uint32_t data;
+    Code captured;              // .bits == -1 means we are looking for SYNC
+    Code registered;
+    int codes_num;              // number of sequential captured codes
 } Protocol;
 
-#define PROTO_SPEC_RUNTINE_DATA {0, 0}, {0, 0}, -1, 0
+static inline void start_data(Protocol *p) { // start capturing data bits
+    p->captured.bits = 0;
+    p->captured.data = 0;
+}
+
+static inline void register_code(Protocol *p) {
+    RFRawEvent event = {
+            .raw_code = p->registered.data,
+            .bits = p->registered.bits,
+            .protocol = p->id,
+    };
+
+    if (p->codes_num == 0) {
+        p->registered = p->captured;
+
+        event.action = RFCODE_START;
+        event.raw_code = p->registered.data;
+        event.bits = p->registered.bits;
+        xQueueSendFromISR(rfcode_event_queue, &event, NULL); // send start code event
+    } else if (p->captured.data != p->registered.data) {  // got different code in a sequence
+        event.action = RFCODE_STOP;
+        xQueueSendFromISR(rfcode_event_queue, &event, NULL); // send stop old code event
+
+        p->registered = p->captured;
+
+        event.action = RFCODE_START;
+        event.raw_code = p->registered.data;
+        event.bits = p->registered.bits;
+        xQueueSendFromISR(rfcode_event_queue, &event, NULL); // send start new code event
+    } else {
+        event.action = RFCODE_CONTINUE;
+        xQueueSendFromISR(rfcode_event_queue, &event, NULL); // send continue code event
+    }
+    p->codes_num++;
+}
+
+static inline void reset(Protocol *p) { // reset parser status to the state it waits next SYNC
+    if (p->codes_num > 0) {             // send stop code event some codes captured
+        RFRawEvent event = {
+                .action = RFCODE_STOP,
+                .raw_code = p->registered.data,
+                .bits = p->registered.bits,
+                .protocol = p->id,
+        };
+        xQueueSendFromISR(rfcode_event_queue, &event, NULL);
+    }
+    p->captured.bits = -1;
+    p->captured.data = 0;
+    p->codes_num = 0;
+}
 
 DRAM_ATTR static Protocol protocols[] = {
 #ifdef CONFIG_RF433_PROTOCOL_EV1527
-        {0x1527, 32, {27, 33}, 4, PROTO_SPEC_RUNTINE_DATA},
+        {.id = 0x1527, .sync_clk = 32, .sync_ratio = {27, 33}, .bit_clk = 4},
 #endif
 };
 DRAM_ATTR static int protocols_num = sizeof(protocols) / sizeof(Protocol);
@@ -77,10 +132,10 @@ static inline void make_range(Range *range, int base_value, int percent) {
 
 static inline void read_protocol(Protocol *p, int high_us, int low_us) {
     if (high_us == 0 || low_us == 0) { // just a noise
-        p->bit_num = -1;
+        reset(p);
         return;
     }
-    if (p->bit_num == -1) { // <-- looking for SYNC
+    if (p->captured.bits == -1) { // <-- looking for SYNC
         if (!is_within_range(divint(low_us, high_us), &p->sync_ratio)) return;
         // sync pulse found
 
@@ -95,8 +150,7 @@ static inline void read_protocol(Protocol *p, int high_us, int low_us) {
             make_range(&p->sync_us, sync_width, 1);
         }
         // start reading data bits
-        p->bit_num = 0;
-        p->data = 0;
+        start_data(p);
         return;
     }
 
@@ -105,30 +159,32 @@ static inline void read_protocol(Protocol *p, int high_us, int low_us) {
     if (is_within_range(bit_width, &p->bit_us)) {
         // looks like bit
     } else if (is_within_range(bit_width, &p->sync_us)                      // width is SYNC
-            && is_within_range(divint(low_us, high_us), &p->sync_ratio)) {  // ratio is SYNC
-
+               && is_within_range(divint(low_us, high_us), &p->sync_ratio)) {  // ratio is SYNC
         // found SYNC of next code
-        xQueueSendFromISR(rfcode_event_queue, &p->data, NULL);
-        // we send code only when we get SYNC of next one. in that case we drop last code that doesn't have SYNC after it.
-        // that is made intentionally. some devices send broken data in last code of the sequence!
+
+        /*
+         * NOTE: we register code only when we get SYNC pulse of next code. in that case we drop last code
+         *       that doesn't have SYNC after it. that is made intentionally. some devices send
+         *       broken data in last code of the sequence!
+         */
+        register_code(p);
 
         // start reading data bits for next code
-        p->bit_num = 0;
-        p->data = 0;
+        start_data(p);
         return;
     } else { // just a noise
-        p->bit_num = -1;
+        reset(p);
         return;
     }
 
     // write bit
-    p->data <<= 1;
+    p->captured.data <<= 1;
     if (high_us > low_us) {  // TODO: check pulse's widths
-        p->data |= 0x1;
+        p->captured.data |= 0x1;
     }
-    p->bit_num++;
-    if (p->bit_num == 32) {
-        p->bit_num = -1;  // data overflow
+    p->captured.bits++;
+    if (p->captured.bits == 32) {  // data overflow
+        reset(p);
     }
 }
 
@@ -158,7 +214,7 @@ static void IRAM_ATTR gpio_isr_handler(void *arg) {
     if (now.level == prev.level) { // we missed some interrupts probably because of noise
         // reset all parsers
         for (int n = 0; n < protocols_num; n++) {
-            protocols[n].bit_num = -1;
+            reset(&protocols[n]);
         }
         prev = now;
         return;
@@ -184,7 +240,7 @@ static void IRAM_ATTR gpio_isr_handler(void *arg) {
 }
 
 void rf433_init(void) {
-    rfcode_event_queue = xQueueCreate(32, sizeof(uint32_t));
+    rfcode_event_queue = xQueueCreate(32, sizeof(RFRawEvent));
 
     // setup GPIO
     gpio_config_t io_conf;

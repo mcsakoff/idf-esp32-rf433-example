@@ -10,10 +10,20 @@ static const char TAG[] = "rf433";
 void rf433Task(void *args) {
     ESP_LOGI(TAG, "task started");
 
-    uint32_t rfcode;
+    RFRawEvent rfcode;
     for (;;) {
         if (xQueueReceive(rfcode_event_queue, &rfcode, portMAX_DELAY)) {
-            ESP_LOGI(TAG, "%06X", rfcode);
+            switch (rfcode.action) {
+                case RFCODE_START:
+                    ESP_LOGI(TAG, "start:    %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
+                    break;
+                case RFCODE_CONTINUE:
+                    ESP_LOGI(TAG, "continue: %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
+                    break;
+                case RFCODE_STOP:
+                    ESP_LOGI(TAG, "stop:     %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
+                    break;
+            }
         }
     }
 
