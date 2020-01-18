@@ -5,4 +5,10 @@ menu "RF433 Reciever"
     default 14
     help
         GPIO number (IOxx) connected to RF433 Receiver.
+
+    config RF433_PROTOCOL_EV1527
+        bool "EV1527 chip protocol"
+        default y
+        help
+            Support devices based on EV1527, RT1527, FP1527, HS1527, etc chips.
 endmenu
