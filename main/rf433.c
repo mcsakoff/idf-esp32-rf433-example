@@ -22,9 +22,14 @@ typedef struct {
 } ProtocolSpec;
 
 
-inline unsigned int divint(int a, int b) {
+static inline unsigned int divint(int a, int b) {
     return ((1024 * a / b) + 512) / 1024;
 }
+
+static inline bool is_within_range(int value, int min, int max) {
+    return value >= min && value <= max;
+}
+
 
 static void IRAM_ATTR gpio_isr_handler(void *arg) {
     static Event prev;
@@ -64,24 +69,25 @@ static void IRAM_ATTR gpio_isr_handler(void *arg) {
             return;
     }
 
+    if (high_pulse_us == 0 || low_pulse_us == 0) { // just a noise
+        bit_num = -1;
+        return;
+    }
+
     if (bit_num == -1) {                       // <-- looking for SYNC
         // check if the pulse looks like SYNC
         //  +---+                           +
         //  | 1 |            31             |
         //  +   +---------------------------+
-        if (high_pulse_us == 0) return;
-        int r = divint(low_pulse_us, high_pulse_us);
-        if (r < 28 || r > 32) { // not a SYNC
-            return;
-        }
+        if (!is_within_range(divint(low_pulse_us, high_pulse_us), 28, 32)) return;
         // sync pulse found
 
         int sync_width = high_pulse_us + low_pulse_us;
         // does it look like previous SYNC?
-        if (sync_width >= spec.min_sync_width && sync_width <= spec.max_sync_width) {
+        if (is_within_range(sync_width, spec.min_sync_width, spec.max_bit_width)) {
             // just use already calculated spec
         } else {
-            spec.base_pulse_width = sync_width / 32;
+            spec.base_pulse_width = divint(sync_width, 32);
             //  +---+         +                   +---------+   +
             //  | 1 |    3    |        or         |    3    | 1 |
             //  +   +---------+                   +         +---+
@@ -102,29 +108,17 @@ static void IRAM_ATTR gpio_isr_handler(void *arg) {
 
     // check next bit width within base pulse width (+- 4%)
     int bit_width = high_pulse_us + low_pulse_us;
-    if (bit_width < spec.min_bit_width) {
-        // looks like noise
-        bit_num = -1;
-        return;
-    } else if (bit_width > spec.max_bit_width) {
-        // probably next SYNC?
-        if (bit_width >= spec.min_sync_width && bit_width <= spec.max_sync_width) {
-            if (high_pulse_us == 0) {  // not a SYNC
-                bit_num = -1;
-                return;
-            }
-            int r = divint(low_pulse_us, high_pulse_us);
-            if (r >= 28 || r <= 32) { // it's a SYNC
-                // we are done with that code
-                xQueueSendFromISR(rfcode_event_queue, &data, NULL);
-
-                // start reading data bits for next code
-                bit_num = 0;
-                data = 0;
-                return;
-            }
-        }
-        // not a bit and not a SYNC
+    if (is_within_range(bit_width, spec.min_bit_width, spec.max_bit_width )) {
+        // looks like bit
+    } else if (is_within_range(bit_width, spec.min_sync_width, spec.max_sync_width)        // width is SYNC
+            && is_within_range(divint(low_pulse_us, high_pulse_us), 28, 32)) {  // ratio is SYNC
+            // we are done with that code
+            xQueueSendFromISR(rfcode_event_queue, &data, NULL);
+            // start reading data bits for next code
+            bit_num = 0;
+            data = 0;
+            return;
+    } else { // just a noise
         bit_num = -1;
         return;
     }
@@ -134,10 +128,8 @@ static void IRAM_ATTR gpio_isr_handler(void *arg) {
     if (high_pulse_us > low_pulse_us) {  // TODO: check pulse's widths
         data |= 0x1;
     }
-
     bit_num++;
     if (bit_num == 32) bit_num = -1;  // data overflow
-
     // we send code only when we get SYNC of next one. in that case we drop last code that doesn't have SYNC after it.
     // that is made intentionally. some devices send broken data in last code of the sequence.
 }
