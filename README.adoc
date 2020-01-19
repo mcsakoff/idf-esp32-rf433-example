@@ -1,7 +1,7 @@
 = ESP8266 RTOS (ESP-IDF) - RF433 Receiver Example
 ifdef::env-github[:outfilesuffix: .adoc]
 
-image:https://img.shields.io/badge/License-MIT-yellow.svg[License: MIT,link=https://opensource.org/licenses/MIT]
+image:https://img.shields.io/badge/license-MIT-green.svg[License: MIT,link=https://opensource.org/licenses/MIT]
 
 Protocols supported:
 
@@ -11,11 +11,10 @@ Protocols supported:
 
 - 315/433-MHz RF transmitter module.
 - ESP8266 family of chips based device.
-- link:https://github.com/espressif/ESP8266_RTOS_SDK[ESP8266 RTOS SDK] installed.
-- Toolchain installed into `~/esp/tools/xtensa-lx106-elf`.
+- link:https://github.com/espressif/ESP8266_RTOS_SDK[ESP8266 RTOS SDK] and corresponding toolchain installed.
 
 [NOTE]
-Built and tested on *ESP-IDF v3.3-rc1 (fc30fca3)*.
+Built and tested on *ESP-IDF v3.3-rc1 (1d60fbb5)*.
 
 == Build and run
 
