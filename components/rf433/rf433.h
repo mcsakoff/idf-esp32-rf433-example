@@ -16,4 +16,12 @@ typedef struct {
     uint16_t protocol;
 } RFRawEvent;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void rf433_init(void);
+
+#ifdef __cplusplus
+}
+#endif

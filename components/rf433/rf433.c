@@ -85,13 +85,7 @@ static inline void register_code(Protocol *p) {
 
 static inline void reset(Protocol *p) { // reset parser status to the state it waits next SYNC
     if (p->codes_num > 0) {             // send stop code event some codes captured
-        RFRawEvent event = {
-                .action = RFCODE_STOP,
-                .raw_code = p->registered.data,
-                .bits = p->registered.bits,
-                .protocol = p->id,
-        };
-        xQueueSendFromISR(rfcode_event_queue, &event, NULL);
+        send(p, RFCODE_STOP);
     }
     p->captured.bits = -1;
     p->captured.data = 0;
