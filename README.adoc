@@ -9,7 +9,7 @@ Protocols supported:
 
 == Prerequisites
 
-- 315/433-MHz RF transmitter module.
+- 315/433-MHz RF receiver module.
 - ESP8266 family of chips based device.
 - link:https://github.com/espressif/ESP8266_RTOS_SDK[ESP8266 RTOS SDK] and corresponding toolchain installed.
 
