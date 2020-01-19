@@ -1,20 +1,28 @@
-= ESP8266 RTOS (ESP-IDF) - RF433 Receiver Example
+= ESP-IDF : RF433 Receiver Example
 ifdef::env-github[:outfilesuffix: .adoc]
 
+image:https://img.shields.io/badge/idf-esp32-green[ESP32,link=https://github.com/espressif/esp-idf]
+image:https://img.shields.io/badge/idf-esp8266-green[ESP8266,link=https://github.com/espressif/ESP8266_RTOS_SDK]
 image:https://img.shields.io/badge/license-MIT-green.svg[License: MIT,link=https://opensource.org/licenses/MIT]
 
 Protocols supported:
 
 - EV1527 (RT1527, FP1527, HS1527)
 
+[NOTE]
+====
+Built and tested on:
+
+    - ESP-IDF (ESP32) v4.1-dev (_8442ec341_)
+    - ESP-IDF (ESP8266) v3.3-rc1 (_1d60fbb5_)
+====
+
 == Prerequisites
 
 - 315/433-MHz RF receiver module.
-- ESP8266 family of chips based device.
-- link:https://github.com/espressif/ESP8266_RTOS_SDK[ESP8266 RTOS SDK] and corresponding toolchain installed.
-
-[NOTE]
-Built and tested on *ESP-IDF v3.3-rc1 (1d60fbb5)*.
+- ESP32 or ESP8266 family of chips based device.
+- link:https://github.com/espressif/esp-idf[ESP-IDF SDK] and corresponding toolchain installed for ESP32.
+- link:https://github.com/espressif/ESP8266_RTOS_SDK[ESP8266 RTOS SDK] and corresponding toolchain installed for ESP8266.
 
 == Build and run
 
@@ -22,7 +30,7 @@ Built and tested on *ESP-IDF v3.3-rc1 (1d60fbb5)*.
     $ make menuconfig
 
 .Build a firmware
-    $ make all
+    $ make build
 
 .Flash to the device and run monitor
     $ make flash monitor
