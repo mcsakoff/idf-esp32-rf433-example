@@ -59,33 +59,26 @@ static inline void start_data(Protocol *p) { // start capturing data bits
     p->captured.data = 0;
 }
 
-static inline void register_code(Protocol *p) {
+static inline void send(Protocol *p, uint8_t action) {
     RFRawEvent event = {
+            .action = action,
             .raw_code = p->registered.data,
             .bits = p->registered.bits,
             .protocol = p->id,
     };
+    xQueueSendFromISR(rfcode_event_queue, &event, NULL);
+}
 
+static inline void register_code(Protocol *p) {
     if (p->codes_num == 0) {
         p->registered = p->captured;
-
-        event.action = RFCODE_START;
-        event.raw_code = p->registered.data;
-        event.bits = p->registered.bits;
-        xQueueSendFromISR(rfcode_event_queue, &event, NULL); // send start code event
+        send(p, RFCODE_START);
     } else if (p->captured.data != p->registered.data) {  // got different code in a sequence
-        event.action = RFCODE_STOP;
-        xQueueSendFromISR(rfcode_event_queue, &event, NULL); // send stop old code event
-
+        send(p, RFCODE_STOP);
         p->registered = p->captured;
-
-        event.action = RFCODE_START;
-        event.raw_code = p->registered.data;
-        event.bits = p->registered.bits;
-        xQueueSendFromISR(rfcode_event_queue, &event, NULL); // send start new code event
+        send(p, RFCODE_START);
     } else {
-        event.action = RFCODE_CONTINUE;
-        xQueueSendFromISR(rfcode_event_queue, &event, NULL); // send continue code event
+        send(p, RFCODE_CONTINUE);
     }
     p->codes_num++;
 }
