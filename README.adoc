@@ -26,6 +26,9 @@ Built and tested on:
 
 == Build and run
 
+.Init/Update submodules
+    $ git submodule update --init --recursive
+
 .Configure the project
     $ make menuconfig
 

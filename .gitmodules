@@ -1,0 +1,3 @@
+[submodule "components/rf433"]
+	path = components/rf433
+	url = https://github.com/mcsakoff/idf-esp32-rf433.git
