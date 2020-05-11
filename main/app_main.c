@@ -1,26 +1,36 @@
-#include "rf433.h"
-
-#include <nvs_flash.h>
+#include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_log.h>
 
-static const char TAG[] = "rf433";
+#include <driver/rf_receiver.h>
 
+static const char *TAG = "main";
 
-void rf433Task(void *args) {
+void rf_task(void *args) {
     ESP_LOGI(TAG, "task started");
 
-    RFRawEvent rfcode;
+    // configure the driver
+    rf_config_t config = RF_DEFAULT_CONFIG(CONFIG_RF_RECEIVER_GPIO);
+    ESP_ERROR_CHECK(rf_config(&config));
+
+    // install the driver
+    ESP_ERROR_CHECK(rf_driver_install(0));
+
+    // get the actions queue
+    QueueHandle_t events = NULL;
+    ESP_ERROR_CHECK(rf_get_events_handle(&events));
+
+    rf_event_t rfcode;
     for (;;) {
-        if (xQueueReceive(rfcode_event_queue, &rfcode, portMAX_DELAY)) {
+        if (xQueueReceive(events, &rfcode, portMAX_DELAY)) {
             switch (rfcode.action) {
-                case RFCODE_START:
+                case RF_ACTION_START:
                     ESP_LOGI(TAG, "start:    %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
                     break;
-                case RFCODE_CONTINUE:
+                case RF_ACTION_CONTINUE:
                     ESP_LOGI(TAG, "continue: %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
                     break;
-                case RFCODE_STOP:
+                case RF_ACTION_STOP:
                     ESP_LOGI(TAG, "stop:     %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
                     break;
             }
@@ -31,16 +41,6 @@ void rf433Task(void *args) {
     vTaskDelete(NULL);
 }
 
-
 void app_main(void) {
-    // initialize NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-
-    rf433_init();
-    xTaskCreate(rf433Task, "rf433Task", 2048, NULL, 6, NULL);
+    xTaskCreate(rf_task, "rf_task", 2048, NULL, 10, NULL);
 }

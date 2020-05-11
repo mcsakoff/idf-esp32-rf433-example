@@ -19,7 +19,7 @@ help: Makefile
 ## open: Open the project in CLion
 open:
 	@if [ -z "$$IDF_PATH" ]; then \
-		echo "---> Setting up ESP8266-IDF SDK environment"; \
+		echo "---> Setting up ESP-IDF SDK environment"; \
 		source .envrc; \
 	fi
 	@echo "---> Running CLion"
@@ -55,7 +55,7 @@ monitor:
 reconfigure:
 	@${IDF} reconfigure
 
-## size: Print basic size information about the app..
+## size: Print basic size information about the app.
 size:
 	@${IDF} size
 

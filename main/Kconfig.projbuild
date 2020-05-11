@@ -1,0 +1,8 @@
+menu "Application"
+    config RF_RECEIVER_GPIO
+        int "RF Receiver GPIO number"
+        range 0 39
+        default 14
+        help
+            GPIO number (IOxx) connected to 315/433-MHz RF receiver module.
+endmenu

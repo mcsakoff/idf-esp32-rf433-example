@@ -2,7 +2,7 @@
 ifdef::env-github[:outfilesuffix: .adoc]
 
 image:https://img.shields.io/badge/idf-esp32-green[ESP32,link=https://github.com/espressif/esp-idf]
-image:https://img.shields.io/badge/idf-esp8266-green[ESP8266,link=https://github.com/espressif/ESP8266_RTOS_SDK]
+image:https://img.shields.io/badge/idf-esp8266-yellow[ESP8266,link=https://github.com/espressif/ESP8266_RTOS_SDK]
 image:https://img.shields.io/badge/license-MIT-green.svg[License: MIT,link=https://opensource.org/licenses/MIT]
 
 Protocols supported:
@@ -11,10 +11,11 @@ Protocols supported:
 
 [NOTE]
 ====
-Built and tested on:
+Tested on:
 
-    - ESP-IDF (ESP32) v4.1-dev (_8442ec341_)
-    - ESP-IDF (ESP8266) v3.3-rc1 (_1d60fbb5_)
+    - ESP-IDF (ESP32) v4.0 (_b0f053d82_)
+    - ESP-IDF (ESP32) v4.1-beta1 (_9778b163b_)
+//    - ESP-IDF (ESP8266) v3.3-rc1 (_1d60fbb5_)
 ====
 
 == Prerequisites

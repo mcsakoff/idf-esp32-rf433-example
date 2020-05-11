@@ -1,3 +1,3 @@
-export IDF_PATH=$HOME/esp/esp-idf
-export IDF_TOOLS_PATH=$HOME/esp
-source $HOME/esp/esp-idf/export.sh
+# Setup ESP8266 SDK
+export IDF_PATH=$HOME/esp/esp8266-rtos-sdk
+export PATH=$HOME/esp/tools/xtensa-lx106-elf/bin:$PATH
