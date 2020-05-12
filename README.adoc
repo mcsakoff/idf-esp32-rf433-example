@@ -3,7 +3,7 @@
 ifdef::env-github[:outfilesuffix: .adoc]
 
 image:https://img.shields.io/badge/idf-esp32-green[ESP32,link=https://github.com/espressif/esp-idf]
-image:https://img.shields.io/badge/idf-esp8266-yellow[ESP8266,link=https://github.com/espressif/ESP8266_RTOS_SDK]
+image:https://img.shields.io/badge/idf-esp8266-green[ESP8266,link=https://github.com/espressif/ESP8266_RTOS_SDK]
 image:https://img.shields.io/badge/license-MIT-green.svg[License: MIT,link=https://opensource.org/licenses/MIT]
 
 Example of link:https://github.com/mcsakoff/idf-esp32-rf433[mcsakoff/idf-esp32-rf433] library usage.
