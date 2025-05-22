@@ -1,3 +1,4 @@
+#include <sys/cdefs.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_log.h>
@@ -6,7 +7,7 @@
 
 static const char *TAG = "main";
 
-void rf_task(void *args) {
+_Noreturn void rf_task(void *args) {
     ESP_LOGI(TAG, "task started");
 
     // configure the driver
@@ -36,9 +37,6 @@ void rf_task(void *args) {
             }
         }
     }
-
-    ESP_LOGI(TAG, "task stopped");
-    vTaskDelete(NULL);
 }
 
 void app_main(void) {
