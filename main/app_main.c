@@ -25,13 +25,13 @@ void rf_task(void *args) {
         if (xQueueReceive(events, &rfcode, portMAX_DELAY)) {
             switch (rfcode.action) {
                 case RF_ACTION_START:
-                    ESP_LOGI(TAG, "start:    %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
+                    ESP_LOGI(TAG, "start:    %06llX (protocol: %02hX, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
                     break;
                 case RF_ACTION_CONTINUE:
-                    ESP_LOGI(TAG, "continue: %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
+                    ESP_LOGI(TAG, "continue: %06llX (protocol: %02hX, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
                     break;
                 case RF_ACTION_STOP:
-                    ESP_LOGI(TAG, "stop:     %06X (protocol: %02X, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
+                    ESP_LOGI(TAG, "stop:     %06llX (protocol: %02hX, %i bits)", rfcode.raw_code, rfcode.protocol, rfcode.bits);
                     break;
             }
         }

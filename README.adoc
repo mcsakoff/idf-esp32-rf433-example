@@ -36,7 +36,7 @@ Example of link:https://github.com/mcsakoff/idf-esp32-rf433[mcsakoff/idf-esp32-r
 
 == Copyright and Licensing
 
-Copyright (C) 2019-2020 Alexey McSakoff +
+Copyright (C) 2019-2025 Alexey McSakoff +
 Free use of this software is granted under the terms of the MIT License.
 
 See the <<LICENSE#,LICENSE>> file for details.
