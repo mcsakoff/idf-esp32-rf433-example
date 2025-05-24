@@ -3,7 +3,6 @@
 ifdef::env-github[:outfilesuffix: .adoc]
 
 image:https://img.shields.io/badge/idf-esp32-green[ESP32,link=https://github.com/espressif/esp-idf]
-image:https://img.shields.io/badge/idf-esp8266-green[ESP8266,link=https://github.com/espressif/ESP8266_RTOS_SDK]
 image:https://img.shields.io/badge/license-MIT-green.svg[License: MIT,link=https://opensource.org/licenses/MIT]
 
 Example of link:https://github.com/mcsakoff/idf-esp32-rf433[mcsakoff/idf-esp32-rf433] library usage.
@@ -11,28 +10,70 @@ Example of link:https://github.com/mcsakoff/idf-esp32-rf433[mcsakoff/idf-esp32-r
 == Prerequisites
 
 - 315/433-MHz RF receiver module.
-- ESP32 or ESP8266 family of chips based device.
-- link:https://github.com/espressif/esp-idf[ESP-IDF SDK] and corresponding toolchain installed for ESP32.
-- link:https://github.com/espressif/ESP8266_RTOS_SDK[ESP8266 RTOS SDK] and corresponding toolchain installed for ESP8266.
+- ESP32 family of chips based device.
+- Installed:
+    * link:https://github.com/espressif/esp-idf[ESP-IDF SDK] and corresponding toolchain for ESP32
+    * link:https://github.com/direnv/direnv[direnv] (optional)
+    * link:https://github.com/esp-rs/espflash[espflash] (optional)
 
-== Build and run
 
-.Init/Update submodules
-    $ git submodule update --init --recursive
+== Quick Start
 
-.Configure the project
-    $ make menuconfig
+=== Setup environment
 
-.Build a firmware
-    $ make build
+Connect your ESP devkit board to USB and check the hardware info:
 
-.Flash to the device and run monitor
-    $ make flash monitor
+    $ espflash board-info --no-stub
+
+Note the device chip type (е.g: `esp32`) and port (e.g.: `/dev/cu.usbserial-14810`).
+
+Setup environment for ESP-IDF:
+
+    $ . ~/esp/esp-idf/export.sh
+    $ export ESPPORT=/dev/cu.usbserial-14810
+
+[TIP]
+====
+If `direnv` installed, create `.envrc.local` file
+
+..envrc.local:
+[source,shell]
+----
+export ESPPORT=/dev/cu.usbserial-14810
+----
+
+and trigger an environment reload:
+
+    $ direnv reload
+
+====
+
+=== Build and run
+
+Configure the project
+
+    $ idf.py set-target esp32
+    $ idf.py menuconfig
+
+[TIP]
+For target type see _Chip type_ from board info.
+
+Build, flash to the device and run monitor:
+
+    $ idf.py build
+    $ idf.py flash
+    $ idf.py monitor
+
 
 == Development
 
-.Open the project in CLion
-    $ make open
+=== CLion
+
+In CLion go to _Settings -> Build, Execution, Deployment -> Toolchains_, click _Add Environment_ and select `~/esp/esp-idf/export.sh` file.
+
+Use `app` build target in _Run / Debug Configurations_.
+
+For details see: link:https://www.jetbrains.com/help/clion/esp-idf.html#cmake-setup[Configure an ESP CMake project in CLion].
 
 == Copyright and Licensing
 

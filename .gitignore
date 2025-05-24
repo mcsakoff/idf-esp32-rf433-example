@@ -1,5 +1,9 @@
-.DS_Store
 /.idea/
+/.cache/
+/.envrc.local
+
+.DS_Store
+
 /build/
 /cmake-build-*/
 /sdkconfig
